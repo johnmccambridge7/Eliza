@@ -51,7 +51,7 @@ nameCapture = '(My name is|I\'m called) ([A-Z](.*)+)'
 adjectives = '(I am|I\'m)([a-z ].*)* ([a-z].*)'
 personCharacteristics = '(I\'m |I am )(an |not an |a | )*([a-z]*)( at| )?( [A-Za-z]*|[A-Za-z]*)?'
 parents = '([mM]om|[mM]other|[dD]ad|[fF]ather)'
-wantModal = 'I( don\'t)?( want) to ([A-Za-z ]*)([A-Za-z ]*)?'
+wantModal = 'I( don\'t)?( want) to ([A-Za-z ]*) ([A-Za-z ]*)?'
 mustModal = 'I (must) ([A-Za-z ]*) ([A-Za-z]*)'
 canModal = 'I (can\'t|can) ([A-Za-z]*)([A-Za-z ]*)'
 
@@ -92,18 +92,18 @@ while True:
 
             if "not" in article:
                 possessive = "aren't"
-                article = " " + article.replace("not", "").strip()
 
-            output = "Why " + possessive + " you"+ article + " " + str(adjectiveCapture.group(3)).strip() + "?"
+            output = "Why " + possessive + " you " + str(adjectiveCapture.group(3)).strip() + "?"
         elif parentsCapture:
             output = "Tell me more about your " + str(parentsCapture.group(1)) + "."
         elif wantCapture:
-            # broken - I don't want to ski.
             conditional = "do" if wantCapture.group(1) == None else "don't"
             modifier = " " + str(wantCapture.group(4))
-            output = "Why " + conditional + " you want to " + str(wantCapture.group(3)) + (modifier if modifier != " " else "") + "?"
+            action = str(wantCapture.group(3)).replace("my", "your")
+            output = "Why " + conditional + " you want to " + action + (modifier if modifier != " " else "") + "?"
         elif mustCapture:
-            output = "Why must you " + str(mustCapture.group(2)) + " " + str(mustCapture.group(3)) + "?"
+            modifier = str(mustCapture.group(2)).replace("my", "your")
+            output = "Why must you " + modifier + " " + str(mustCapture.group(3)) + "?"
         elif canCapture:
             endingVerb = "" if str(canCapture.group(3)) == "" else str(canCapture.group(3))
             output = "Why " + str(canCapture.group(1)) + " you " + str(canCapture.group(2)).strip() + endingVerb + "?"
