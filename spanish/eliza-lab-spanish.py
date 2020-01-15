@@ -1,22 +1,3 @@
-# I am ([A-Z](.*)) - captures name
-# (I am|I\'m|My name is|I'm called) ([A-Z](.*)) - works for name capture
-# (I am|I\'m)([a-z[:blank:]].*)* ([a-z].*) - generalizes for adjectives
-# (I'm|I am)( an| not| a|[[:blank:]])*([a-z]*)( at|[[:blank:]])?([[:blank:]][A-Za-z]*|[A-Za-z]*)? - extracts person characteristics
-# ([mM]om|[mM]other|[dD]ad|[fF]ather) - extracts parental features
-# I( don't)?( want) to ([A-Za-z](.*)+) ([A-Za-z].*). - want modal verb
-# I (must) ([A-Za-z](.*)+) ([A-Za-z].*). - must modal verb
-# I (can't|can) ([A-Za-z](.*)+) ([A-Za-z].*). - can modal verb
-# (think|hope) - thoughts and aspirations
-
-"""
-Want Test Cases:
-I want to go skiing.
-I don't want to start programming.
-I don't want to learn to ski.
-I don't want to learn how to program.
-I want to go ski.
-"""
-
 import re
 import random
 
@@ -44,22 +25,36 @@ class bcolors:
 # ([Pp]ienso|[Ee]spero) - thoughts and aspirations
 # ([Ss]iempre) - specific examples
 
-# (I\'m |I am )(an |not a[n]? |a | )*([A-Za-z ]*)
 
 greeting = 'Soy ([A-Z](.*))'
 nameCapture = '(Mi nombre es|Me llamo) ([A-Z](.*)+)'
 adjectives = '(Yo |No |Yo no )?([Ee]stoy)([a-z ]*) ([a-z]*)?'
-personal = '(Soy|Yo soy|(Yo )?[nN]o soy)? (una |de | )*([A-Za-z ]*)'
+personal = '(Soy|Yo soy|(Yo )?[nN]o soy) (una |de | )*([A-Za-z ]*)'
 
-parents = '([mM]om|[mM]other|[dD]ad|[fF]ather)'
-wantModal = 'I( don\'t)?( want) to ([A-Za-z ]*) ([A-Za-z ]*)?'
-mustModal = 'I (must) ([A-Za-z ]*) ([A-Za-z]*)'
-canModal = 'I (can\'t|can) ([A-Za-z]*)([A-Za-z ]*)'
+parents = '([mM]ama|[mM]adre|[pP]apa)'
+wantModal = '(No |Yo )?([Qq]uiero )([A-Za-z]+)([A-Za-z ]+)*'
+mustModal = '(Debo) ([A-Za-z]+) ((al|de|a|el) ([A-Za-z]*))'
+canModal = '(Yo |Yo no |No )?([Pp]uedo) ([A-Za-z ]*) (([A-Za-z ]*)*)'
 
 # general cases
-thoughts = '(think|hope)'
-examples = '(always)'
-insults = '(stupid|idiot|loser|sucker)'
+thoughts = '([Pp]ienso|[Ee]spero)'
+examples = '(siempre)'
+insults = '(estupida|idiota)'
+
+# example conversation
+conversation = [
+    'Me llamo Rolando',
+    'Estoy un poco triste',
+    'Porque mi mama quiere que yo me vaya de la casa.',
+    'Ella dice que debo ordenar el cuarto',
+    'Es que yo soy bastante desordenado.',
+    'Porque no me gusta. No quiero ordenar.',
+    'Porque no me da la gana',
+    'No, estupida',
+    'Bueno. No se. Me cuesta mucho. No puedo ser ordenado.',
+    'Porque cuando era nino siempre me gustaba jugar en la naturaleza, donde todo es libre.',
+    'Pienso que todo empezo cuando fui a la playa por primera vez.'
+]
 
 border = bcolors.OKBLUE + bcolors.BOLD + " | "
 
@@ -67,12 +62,12 @@ print(border + bcolors.OKGREEN + "***** ELIZA Chat-Bot (español edition) - by J
 
 border = bcolors.OKBLUE + bcolors.BOLD + " | "
 
-while True:
-    text = str(input(border + bcolors.BOLD + bcolors.WHITE + ': '))
+#while True:
+for text in conversation:
+    # text = str(input(border + bcolors.BOLD + bcolors.WHITE + ': '))
     output = ""
 
     if text:
-        groupHello = re.search(greeting, text, re.IGNORECASE)
         groupNameCapture = re.search(nameCapture, text, re.IGNORECASE)
         adjectiveCapture = re.search(adjectives, text, re.IGNORECASE)
         parentsCapture = re.search(parents, text, re.IGNORECASE)
@@ -87,45 +82,59 @@ while True:
 
         if groupNameCapture:
             output = "Hola, " + str(groupNameCapture.group(2)) + " - ¿Cómo estás?"
-        elif personalCapture:
 
-            
-            article = "" if personalCapture.group(3) == None else str(personalCapture.group(3))
-            item = str(personalCapture.group(4))
-            conditional = "" if "no" not in str(personalCapture.group(1)) else " no"
+        elif parentsCapture:
+            output = "Cuéntame más de tu " + str(parentsCapture.group(1)) + "."
 
-            output = "¿Porqué" + conditional + " eres " + article + item + "?"
+        elif insultsCapture:
+            choices = ["¡Hey, sin insultos! ", "Cálmate y cuéntame más."]
+            output = choices[random.randint(0, len(choices) - 1)]
 
         elif adjectiveCapture:
             article = "" if adjectiveCapture.group(1) == None else str(adjectiveCapture.group(1))
             possessive = " no"
 
-            if "no" not in article:
+            if "no" not in article.lower():
                 possessive = "" 
 
             output = "¿Porqué" + possessive + " estás " + str(adjectiveCapture.group(4)).strip() + "?"
-        elif parentsCapture:
-            output = "Tell me more about your " + str(parentsCapture.group(1)) + "."
+
+        elif personalCapture:
+            article = "" if personalCapture.group(3) == None else str(personalCapture.group(3))
+            item = str(personalCapture.group(4))
+
+            conditional = "" if "no" not in str(personalCapture.group(1)) else " no"
+            output = "¿Porqué" + conditional + " eres " + article + item + "?"
+
         elif wantCapture:
-            conditional = "do" if wantCapture.group(1) == None else "don't"
-            modifier = " " + str(wantCapture.group(4))
-            action = str(wantCapture.group(3)).replace("my", "your")
-            output = "Why " + conditional + " you want to " + action + (modifier if modifier != " " else "") + "?"
+            conditional = ""
+
+            if wantCapture.group(1) != None:
+                if wantCapture.group(1).lower().strip() == "no":
+                    conditional = " no"
+
+            modifier = str(wantCapture.group(4)) if str(wantCapture.group(4)) != "None" else "" 
+            action = str(wantCapture.group(3)).replace("me", "te") if str(wantCapture.group(3)) != "None" else " "
+
+            output = "¿Porqué" + conditional + " quieres " + action + modifier + "?"
+
         elif mustCapture:
-            modifier = str(mustCapture.group(2)).replace("my", "your")
-            output = "Why must you " + modifier + " " + str(mustCapture.group(3)) + "?"
+            modifier = str(mustCapture.group(2)).replace("me", "te")
+            output = "¿Porqué debes " + modifier + " " + str(mustCapture.group(3)) + "?"
+
         elif canCapture:
+            conditional = "no" if "no" in canCapture.group(1).lower() else ""
             endingVerb = "" if str(canCapture.group(3)) == "" else str(canCapture.group(3))
-            output = "Why " + str(canCapture.group(1)) + " you " + str(canCapture.group(2)).strip() + endingVerb + "?"
+            output = "¿Porqué " + conditional + " puedes " + str(canCapture.group(3)) + " " + str(canCapture.group(4)).strip() + "?"
+
         elif thoughtsCapture:
-            output = "Why do you think that?" if str(thoughtsCapture.group(1)) == "think" else "Why do you suppose that?"
+            output = "¿Porqué piensas eso?" if str(thoughtsCapture.group(1)).lower() == "pienso" else "¿Porqué esperas eso?"
+
         elif examplesCapture:
-            output = "Can you give me a specific example?"
-        elif insultsCapture:
-            choices = ["Hey, no insults!", "Please be a little kinder!", "You will need to calm down a little."]
-            output = choices[random.randint(0, len(choices) - 1)]
+            output = "¿Puedes darme un ejemplo específico?"
+            
         else:
-            output = "Tell me more."
+            output = "Cuéntame más."
 
         output = border + "\t" + bcolors.OKGREEN + output
 
