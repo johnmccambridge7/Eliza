@@ -49,7 +49,7 @@ class bcolors:
 greeting = 'I am ([A-Z](.*))'
 nameCapture = '(My name is|I\'m called) ([A-Z](.*)+)'
 adjectives = '(I am|I\'m)([a-z ].*)* ([a-z].*)'
-personCharacteristics = '(I\'m |I am )(an |not an |a | )*([a-z]*)( at| )?( [A-Za-z]*|[A-Za-z]*)?'
+personal = '(I\'m |I am )(an |not a[n]? |a | )*([A-Za-z ]*)'
 parents = '([mM]om|[mM]other|[dD]ad|[fF]ather)'
 wantModal = 'I( don\'t)?( want) to ([A-Za-z ]*) ([A-Za-z ]*)?'
 mustModal = 'I (must) ([A-Za-z ]*) ([A-Za-z]*)'
@@ -79,6 +79,7 @@ while True:
         wantCapture = re.search(wantModal, text, re.IGNORECASE)
         mustCapture = re.search(mustModal, text, re.IGNORECASE)
         canCapture = re.search(canModal, text, re.IGNORECASE)
+        personalCapture = re.search(personal, text, re.IGNORECASE)
         
         thoughtsCapture = re.search(thoughts, text, re.IGNORECASE)
         examplesCapture = re.search(examples, text, re.IGNORECASE)
@@ -86,13 +87,14 @@ while True:
 
         if groupNameCapture:
             output = "Hello, " + str(groupNameCapture.group(2)) + "!"
+        elif personalCapture:
+            article = "" if adjectiveCapture.group(2) == None else str(adjectiveCapture.group(2))
+            item = str(adjectiveCapture.group(3))
+            possessive = "aren't" if "not" in article else "are"
+            output = "Why " + possessive + " you" + article + " " + item + "?"
         elif adjectiveCapture:
             article = "" if adjectiveCapture.group(2) == None else str(adjectiveCapture.group(2))
-            possessive = "are"
-
-            if "not" in article:
-                possessive = "aren't"
-
+            possessive = "aren't" if "not" in article else "are"
             output = "Why " + possessive + " you " + str(adjectiveCapture.group(3)).strip() + "?"
         elif parentsCapture:
             output = "Tell me more about your " + str(parentsCapture.group(1)) + "."
